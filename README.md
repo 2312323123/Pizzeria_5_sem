@@ -1,8 +1,20 @@
 # Pizzeria_5_sem
 
+https://blog.logrocket.com/getting-started-with-postgres-in-your-react-app/
+
 ## postgres
 
--
+- pobierz postgresa
+- robimy przez konsolę
+- trzeba dodać psql do zmiennych środowiskowych
+- psql -d postgres -U postgres
+- CREATE ROLE bazki_user WITH LOGIN PASSWORD 'bazki_user_haslo';
+- ALTER ROLE bazki_user CREATEDB;
+- \q
+- psql -d postgres -U bazki_user
+  ...
+- CREATE DATABASE bazki_projekt_database;
+  done
 
 ## node:
 
@@ -18,17 +30,20 @@ jak nie ma to https://nodejs.org/en/download
 - jak skończy mielić to wpisać `node index.js`
 - jak chcemy zresetować bazkę to zamiast tego `node reset.js`
 
-const Pool = require("pg").Pool;
-const pool = new Pool({
-user: "bazki_user",
-host: "localhost",
-database: "bazki_projekt_database",
-password: "bazki_user_haslo",
-port: 5432,
+nie ważne:
+const Pool = require("pg").Pool; \
+const pool = new Pool({ \
+user: "bazki_user", \
+host: "localhost", \
+database: "bazki_projekt_database", \
+password: "bazki_user_haslo", \
+port: 5432, \
 });
 
 ## react
 
-- wejść w node-postgres
+- wejść w bazki_react
 - odpalić tam konsolę
+- npm install --global yarn
 - yarn install
+- yarn run dev
