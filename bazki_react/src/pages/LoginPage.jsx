@@ -1,6 +1,11 @@
 import React, { useRef, useState } from "react";
 
+import { useDispatch } from "react-redux";
+import { login_action } from "../features/user";
+
 function LoginPage() {
+  const dispatch = useDispatch();
+
   const loginRef1 = useRef(null);
   const passwordRef1 = useRef(null);
   const loginRef2 = useRef(null);
@@ -13,15 +18,74 @@ function LoginPage() {
 
   const [processingRequest, setProcessingRequest] = useState(false);
 
-  function registerSubmit() {
+  async function loginSubmit(e) {
+    e.preventDefault();
     setProcessingRequest(true);
+
+    const login = login1;
+    const password = password1;
+
+    const request = fetch("http://localhost:3001/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ login, password }),
+    });
+
+    const response = await request;
+    const text = await response.json();
+    // const text = response.text
+    if (text.position === "unauthenticated") {
+      console.log("tell user about wrong login here");
+    } else {
+      dispatch(
+        login_action({
+          login,
+          password,
+          position: text.position,
+        })
+      );
+    }
+
+    setProcessingRequest(false);
   }
 
-  function loginSubmit() {
+  async function registerSubmit(e) {
+    e.preventDefault();
     setProcessingRequest(true);
+
+    const login = login2;
+    const password = password2;
+
+    const request = fetch("http://localhost:3001/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ login, password }),
+    });
+
+    const response = await request;
+    const text = await response.json();
+    // const text = response.text
+    if (text.position === "unauthenticated") {
+      console.log("tell user about wrong register here");
+    } else {
+      console.log("position: " + text.position);
+      dispatch(
+        login_action({
+          login,
+          password,
+          position: text.position,
+        })
+      );
+    }
+
+    setProcessingRequest(false);
   }
 
-  function login() {
+  function lolgin() {
     let name = prompt("Enter merchant name");
     let email = prompt("Enter merchant email");
     fetch("http://localhost:3001/merchants", {
@@ -67,7 +131,7 @@ function LoginPage() {
         <br />
         <input
           type="submit"
-          onClick={loginSubmit}
+          onClick={(event) => loginSubmit(event)}
           disabled={processingRequest}
         />
       </form>
@@ -96,10 +160,23 @@ function LoginPage() {
         <br />
         <input
           type="submit"
-          onClick={registerSubmit}
+          onClick={(event) => registerSubmit(event)}
           disabled={processingRequest}
         />
       </form>
+      <button
+        onClick={() =>
+          dispatch(
+            login({
+              login: "jan",
+              password: "kowalski",
+              position: "manager",
+            })
+          )
+        }
+      >
+        hehe
+      </button>
     </>
   );
 }

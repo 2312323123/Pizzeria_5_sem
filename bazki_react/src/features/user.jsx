@@ -6,10 +6,12 @@ export const userSlice = createSlice({
     value: { login: "lol", password: "", position: "unauthenticated" },
   },
   reducers: {
-    login: (state, action) => {
+    login_action: (state, action) => {
       state.value = action.payload;
     },
   },
 });
+
+export const { login_action } = userSlice.actions;
 
 export default userSlice.reducer;
