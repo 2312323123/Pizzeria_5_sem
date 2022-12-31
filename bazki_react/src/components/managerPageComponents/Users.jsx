@@ -32,8 +32,8 @@ function Users() {
     <>
       <h3>login | position</h3>
       <ul style={{ maxHeight: "50vh", overflowY: "scroll" }}>
-        {users.map((user, id) => (
-          <SingleUser key={id} user={user} getUsers={getUsers} />
+        {users.map((one_user, id) => (
+          <SingleUser key={id} the_user={one_user} getUsers={getUsers} />
         ))}
       </ul>
     </>

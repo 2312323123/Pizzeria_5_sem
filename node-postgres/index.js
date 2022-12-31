@@ -4,12 +4,9 @@ const port = 3001;
 
 const bazki_model = require("./bazki_model");
 const inicjalizacja = require("./inicjalizacja_model");
+const manager_menu_model = require("./manager_menu_model");
 
-inicjalizacja.initialize().then(() => {
-  bazki_model
-    .authenticate("cookie_monster_11", "cookies")
-    .then((result) => console.log(result));
-});
+inicjalizacja.initialize();
 
 app.use(express.json());
 app.use(function (req, res, next) {
@@ -130,6 +127,16 @@ app.post("/edit_user", async (req, res) => {
   }
 });
 
+app.post("/delete_user", async (req, res) => {
+  try {
+    const result = await bazki_model.delete_user(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
 // app.get("/", async (req, res) => {
 //   try {
 //     const merchants = await bazki_model.getMerchants();
@@ -148,6 +155,90 @@ app.post("/edit_user", async (req, res) => {
 //   //     res.status(500).send(error);
 //   //   });
 // });
+
+/* manager_menu_model */
+
+app.post("/get_products", async (req, res) => {
+  try {
+    const result = await manager_menu_model.get_products(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/add_product", async (req, res) => {
+  try {
+    const result = await manager_menu_model.add_product(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/delete_product", async (req, res) => {
+  try {
+    const result = await manager_menu_model.delete_product(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/change_product_name", async (req, res) => {
+  try {
+    const result = await manager_menu_model.change_product_name(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/change_product_price", async (req, res) => {
+  try {
+    const result = await manager_menu_model.change_product_price(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/add_product_ingredient", async (req, res) => {
+  try {
+    const result = await manager_menu_model.add_product_ingredient(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/change_product_ingredient_amount", async (req, res) => {
+  try {
+    const result = await manager_menu_model.change_product_ingredient_amount(
+      req.body
+    );
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/delete_product_ingredient", async (req, res) => {
+  try {
+    const result = await manager_menu_model.delete_product_ingredient(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
 
 app.post("/merchants", (req, res) => {
   bazki_model

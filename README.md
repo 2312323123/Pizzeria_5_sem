@@ -16,6 +16,9 @@ https://blog.logrocket.com/getting-started-with-postgres-in-your-react-app/
 - CREATE DATABASE bazki_projekt_database;
   done
 
+- psql -d bazki_projekt_database -U bazki_user
+  bazki_user_haslo
+
 ## node:
 
 trzeba mieć node

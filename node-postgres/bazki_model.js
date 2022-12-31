@@ -91,7 +91,7 @@ const register = async (body) => {
 const getIngredients = async (body) => {
   const position = await authenticate(body);
 
-  if (position === "manager" || position === "deliverer") {
+  if (position === "manager" || position === "supplier") {
     return new Promise(function (resolve, reject) {
       pool.query(
         "SELECT * FROM warehouse ORDER BY name ASC",
@@ -185,9 +185,13 @@ const deleteIngredient = async (body) => {
 
 const supplyIngredient = async (body) => {
   const position = await authenticate(body);
-  const { id, amount } = body;
+  let { id, amount } = body;
+  amount = Number(amount);
+  if (isNaN(amount)) {
+    amount = 0;
+  }
 
-  if (position === "deliverer") {
+  if (position === "supplier") {
     return new Promise(function (resolve, reject) {
       pool.query(
         `UPDATE warehouse
@@ -228,9 +232,13 @@ const getUsers = async (body) => {
 };
 
 const editUser = async (body) => {
+  console.log("initial body: ");
+  console.log(body);
   const position = await authenticate(body);
   const edit_position = body.position;
-  const id = body.id;
+  const login = body.loginToEdit;
+  console.log("edit position: " + edit_position);
+  console.log("login: " + login);
 
   if (
     edit_position === "manager" ||
@@ -239,12 +247,35 @@ const editUser = async (body) => {
     edit_position === "customer"
   ) {
     if (position === "manager") {
+      if (edit_position === "deliverer") {
+        const deliverersAmountPromise = new Promise(function (resolve, reject) {
+          pool.query(
+            `SELECT COUNT(login)
+              FROM users
+              WHERE position = 'deliverer'`,
+            (error, results) => {
+              if (error) {
+                reject(error);
+              }
+              resolve(results.rows[0].count);
+            }
+          );
+        });
+
+        const deliverersAmount = await deliverersAmountPromise;
+
+        if (deliverersAmount >= 3) {
+          // throw new Error("max deliverers amount reached");
+          return Promise.reject({ message: "max deliverers amount reached" });
+        }
+      }
+
       return new Promise(function (resolve, reject) {
         pool.query(
           `UPDATE users
             SET position = $1
-            WHERE id = $2`,
-          [edit_position, id],
+            WHERE login = $2`,
+          [edit_position, login],
           (error, results) => {
             if (error) {
               reject(error);
@@ -254,10 +285,54 @@ const editUser = async (body) => {
         );
       });
     } else {
+      console.log(body);
       throw new Error("someone not authorized tried to edit users");
     }
   } else {
     throw new Error("trying to assign unknown position");
+  }
+};
+
+const delete_user = async (body) => {
+  const position = await authenticate(body);
+  const { user_login } = body;
+
+  if (position === "manager") {
+    console.log(user_login);
+    const exists = await new Promise(function (resolve, reject) {
+      pool.query(
+        `SELECT EXISTS (
+          SELECT 1 FROM users WHERE login=$1
+        )`,
+        [user_login],
+        async (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows[0].exists);
+        }
+      );
+    });
+
+    if (!exists) {
+      throw new Error("user doesn't exist");
+    }
+
+    return new Promise(function (resolve, reject) {
+      pool.query(
+        `DELETE FROM users
+        WHERE login = $1`,
+        [user_login],
+        async (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(true);
+        }
+      );
+    });
+  } else {
+    throw new Error("someone not authorized tried to delete user");
   }
 };
 
@@ -312,6 +387,7 @@ module.exports = {
   supplyIngredient,
   getUsers,
   editUser,
+  delete_user,
   getMerchants,
   createMerchant,
   deleteMerchant,

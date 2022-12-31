@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 
 function SingleUser(props) {
-  const { user } = props;
+  const user = useSelector((state) => state.user.value);
 
   const selectRef = useRef(null);
 
@@ -11,13 +12,9 @@ function SingleUser(props) {
     setSelection(selectRef.current.value);
   }, []);
 
-  async function edit(id, position, event) {
+  async function edit(position, event) {
     const newSelection = event.target.value;
     selectRef.current.value = selection;
-
-    // jak pyknie to
-    // setSelection(newSelection)
-    // event.target.value = newSelection
 
     const request = fetch("http://localhost:3001/edit_user", {
       method: "POST",
@@ -27,29 +24,8 @@ function SingleUser(props) {
       body: JSON.stringify({
         login: user.login,
         password: user.password,
-        id: id,
+        loginToEdit: props.the_user.login,
         position,
-      }),
-    });
-
-    const response = await request;
-    // const text = await response.json();
-
-    // if (text === true) {
-    //   getUsers();
-    // }
-  }
-
-  async function remove(id) {
-    const request = fetch("http://localhost:3001/delete_ingredient", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        login: user.login,
-        password: user.password,
-        id,
       }),
     });
 
@@ -57,16 +33,41 @@ function SingleUser(props) {
     const text = await response.json();
 
     if (text === true) {
-      getUsers();
+      setSelection(newSelection);
+      event.target.value = newSelection;
+    } else {
+      alert(text.message);
+    }
+  }
+
+  async function remove() {
+    console.log(props.the_user);
+    const request = fetch("http://localhost:3001/delete_user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        login: user.login,
+        password: user.password,
+        user_login: props.the_user.login,
+      }),
+    });
+
+    const response = await request;
+    const text = await response.json();
+
+    if (text === true) {
+      props.getUsers();
     }
   }
 
   return (
     <li>
-      <span style={{ margin: "1rem" }}>{user.login}</span> |
+      <span style={{ margin: "1rem" }}>{props.the_user.login}</span> |
       <select
-        defaultValue={user.position}
-        onInput={(e) => edit(user.id, e.target.value, e)}
+        defaultValue={props.the_user.position}
+        onInput={(e) => edit(e.target.value, e)}
         style={{ margin: "1rem" }}
         ref={selectRef}
       >
@@ -76,7 +77,7 @@ function SingleUser(props) {
         <option>manager</option>
       </select>{" "}
       |
-      <button style={{ margin: "1rem" }} onClick={() => alert(selection)}>
+      <button style={{ margin: "1rem" }} onClick={remove}>
         usuń
       </button>
     </li>
