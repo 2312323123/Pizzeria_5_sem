@@ -72,7 +72,7 @@ const delete_product = async (body) => {
     const exists = await new Promise(function (resolve, reject) {
       pool.query(
         `SELECT EXISTS (
-          SELECT 1 FROM menu WHERE name=$1
+          SELECT 1 FROM prices WHERE name=$1
         )`,
         [name],
         async (error, results) => {

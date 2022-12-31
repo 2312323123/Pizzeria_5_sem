@@ -5,6 +5,7 @@ const port = 3001;
 const bazki_model = require("./bazki_model");
 const inicjalizacja = require("./inicjalizacja_model");
 const manager_menu_model = require("./manager_menu_model");
+const customer_model = require("./customer_model");
 
 inicjalizacja.initialize();
 
@@ -240,27 +241,26 @@ app.post("/delete_product_ingredient", async (req, res) => {
   }
 });
 
-app.post("/merchants", (req, res) => {
-  bazki_model
-    .createMerchant(req.body)
-    .then((response) => {
-      res.status(200).send(response);
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
+app.post("/customer_menu", async (req, res) => {
+  try {
+    const result = await customer_model.get_products(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
 });
 
-app.delete("/merchants/:id", (req, res) => {
-  bazki_model
-    .deleteMerchant(req.params.id)
-    .then((response) => {
-      res.status(200).send(response);
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
+app.post("/evaluate_delivery_time", async (req, res) => {
+  try {
+    const result = await customer_model.evaluate_delivery_time(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
 });
+
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);
 });

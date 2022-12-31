@@ -9,22 +9,6 @@ const pool = new Pool({
 
 const reset = async () => {
   try {
-    const dropCourierBusyTable = new Promise(function (resolve, reject) {
-      pool.query("DROP TABLE courier_busy", (error, results) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(true);
-      });
-    });
-
-    await dropCourierBusyTable;
-    console.log("courier_busy dropped successfully");
-  } catch (e) {
-    console.log(e);
-  }
-
-  try {
     const dropPricesTable = new Promise(function (resolve, reject) {
       pool.query("DROP TABLE prices", (error, results) => {
         if (error) {

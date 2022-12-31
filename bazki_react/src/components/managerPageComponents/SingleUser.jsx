@@ -41,7 +41,6 @@ function SingleUser(props) {
   }
 
   async function remove() {
-    console.log(props.the_user);
     const request = fetch("http://localhost:3001/delete_user", {
       method: "POST",
       headers: {

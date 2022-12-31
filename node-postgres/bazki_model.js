@@ -7,6 +7,31 @@ const pool = new Pool({
   port: 5432,
 });
 
+const update_prices = async (body) => {
+  const position = await authenticate(body);
+
+  if (position === "manager") {
+    return new Promise(function (resolve, reject) {
+      pool.query(
+        `UPDATE prices
+        SET product_price = (SELECT SUM(m.amount * w.price)
+                              FROM menu m
+                              INNER JOIN warehouse w
+                              ON m.requirement_id = w.id
+                              WHERE m.name = prices.name)`,
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(true);
+        }
+      );
+    });
+  } else {
+    throw new Error("someone not authorized tried to update prices");
+  }
+};
+
 const authenticate = async (body) => {
   const { login, password } = body;
   const existsCheck = new Promise(function (resolve, reject) {
@@ -119,10 +144,11 @@ const editIngredient = async (body) => {
           SET name = $1, price = $2
           WHERE id = $3`,
         [name, price, id],
-        (error, results) => {
+        async (error, results) => {
           if (error) {
             reject(error);
           }
+          await update_prices(body);
           resolve(true);
         }
       );
@@ -170,10 +196,11 @@ const deleteIngredient = async (body) => {
         `DELETE FROM warehouse
           WHERE id = $1`,
         [id],
-        (error, results) => {
+        async (error, results) => {
           if (error) {
             reject(error);
           }
+          await update_prices(body);
           resolve(true);
         }
       );
@@ -232,14 +259,9 @@ const getUsers = async (body) => {
 };
 
 const editUser = async (body) => {
-  console.log("initial body: ");
-  console.log(body);
   const position = await authenticate(body);
   const edit_position = body.position;
   const login = body.loginToEdit;
-  console.log("edit position: " + edit_position);
-  console.log("login: " + login);
-
   if (
     edit_position === "manager" ||
     edit_position === "deliverer" ||
@@ -267,6 +289,24 @@ const editUser = async (body) => {
         if (deliverersAmount >= 3) {
           // throw new Error("max deliverers amount reached");
           return Promise.reject({ message: "max deliverers amount reached" });
+        } else {
+          await new Promise(function (resolve, reject) {
+            pool.query(
+              `INSERT INTO couriers (login, work_start, work_end)
+              VALUES ($1, $2, $3)`,
+              [
+                login,
+                new Date(1970, 0, 1, 14).getTime(),
+                new Date(1970, 0, 1, 22).getTime(),
+              ],
+              (error, results) => {
+                if (error) {
+                  reject(error);
+                }
+                resolve(true);
+              }
+            );
+          });
         }
       }
 
@@ -285,7 +325,6 @@ const editUser = async (body) => {
         );
       });
     } else {
-      console.log(body);
       throw new Error("someone not authorized tried to edit users");
     }
   } else {
@@ -298,7 +337,6 @@ const delete_user = async (body) => {
   const { user_login } = body;
 
   if (position === "manager") {
-    console.log(user_login);
     const exists = await new Promise(function (resolve, reject) {
       pool.query(
         `SELECT EXISTS (
@@ -316,6 +354,37 @@ const delete_user = async (body) => {
 
     if (!exists) {
       throw new Error("user doesn't exist");
+    }
+
+    const user_position_query = await new Promise(function (resolve, reject) {
+      pool.query(
+        `SELECT position FROM users WHERE login=$1`,
+        [user_login],
+        async (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results);
+        }
+      );
+    });
+
+    const user_position = await user_position_query.rows[0].position;
+
+    if (user_position === "deliverer") {
+      await new Promise((resolve, reject) => {
+        pool.query(
+          `DELETE FROM couriers
+          WHERE login = $1`,
+          [user_login],
+          async (error, results) => {
+            if (error) {
+              reject(error);
+            }
+            resolve(true);
+          }
+        );
+      });
     }
 
     return new Promise(function (resolve, reject) {

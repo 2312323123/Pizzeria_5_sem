@@ -186,49 +186,6 @@ function SingleProduct(props) {
     }
   }
 
-  async function create() {
-    const name = prompt("nazwa produktu: ");
-    if (!name) {
-      return;
-    }
-    const id = prompt("id pierwszego składnika: ");
-    if (!id) {
-      return;
-    }
-    let amount = prompt("ilość pierwszego składnika: ");
-    if (!amount) {
-      return;
-    }
-    amount = Number(amount);
-    if (isNaN(amount)) {
-      alert("zły format ilości!");
-      return;
-    }
-
-    const request = fetch("http://localhost:3001/add_product", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        login: user.login,
-        password: user.password,
-        name,
-        id,
-        amount,
-      }),
-    });
-
-    const response = await request;
-    const text = await response.json();
-
-    if (text === true) {
-      getProducts();
-    } else {
-      alert("product name already taken wrong id or smth");
-    }
-  }
-
   return (
     <li>
       <span style={{ marginInlineStart: "1rem" }}>{product.name}</span>{" "}

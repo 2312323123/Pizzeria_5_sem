@@ -6,10 +6,16 @@ import { createSlice } from "@reduxjs/toolkit";
 //   position: "unauthenticated",
 // };
 
+// const initialStateValue = {
+//   login: "cookie_monster_11",
+//   password: "Ilikecookies",
+//   position: "manager",
+// };
+
 const initialStateValue = {
-  login: "cookie_monster_11",
-  password: "Ilikecookies",
-  position: "manager",
+  login: "customer",
+  password: "asdfasdf",
+  position: "customer",
 };
 
 export const userSlice = createSlice({

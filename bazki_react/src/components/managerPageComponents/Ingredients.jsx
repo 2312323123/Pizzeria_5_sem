@@ -1,18 +1,54 @@
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { update_products } from "../../features/manager_product";
 
 function Ingredients() {
   const user = useSelector((state) => state.user.value);
+  const dispatch = useDispatch();
 
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    getProducts();
+    getIngredients();
   }, []);
 
   async function getProducts() {
+    const request = fetch("http://localhost:3001/get_products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ login: user.login, password: user.password }),
+    });
+
+    const response = await request;
+    const text = await response.json();
+
+    const processed = [];
+
+    for (const x of text.prices) {
+      const name = x.name;
+      const ingredients = text.ingredients.filter(
+        (ingredient) => ingredient.menu_name === name
+      );
+      processed.push({
+        name: x.name,
+        ingredients: ingredients.map((obj) => ({
+          id: obj.id,
+          name: obj.name,
+          amount: obj.amount,
+        })),
+        product_price: Number(x.product_price),
+        price: Number(x.price),
+      });
+    }
+
+    dispatch(update_products(processed));
+  }
+
+  async function getIngredients() {
     const request = fetch("http://localhost:3001/ingredients", {
       method: "POST",
       headers: {
@@ -53,6 +89,8 @@ function Ingredients() {
     const text = await response.json();
 
     if (text === true) {
+      await getProducts();
+
       setProducts(
         products.map((the_product) => {
           if (the_product.id === product.id) {
@@ -81,7 +119,8 @@ function Ingredients() {
     const text = await response.json();
 
     if (text === true) {
-      getProducts();
+      await getProducts();
+      getIngredients();
     }
   }
 
@@ -116,7 +155,7 @@ function Ingredients() {
     const text = await response.json();
 
     if (text === true) {
-      getProducts();
+      getIngredients();
     }
   }
 

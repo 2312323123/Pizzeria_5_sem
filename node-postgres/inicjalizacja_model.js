@@ -122,31 +122,12 @@ const createTables = async () => {
 
   await pricesTable;
 
-  const courierBusyTable = new Promise(function (resolve, reject) {
-    pool.query(
-      `CREATE TABLE IF NOT EXISTS courier_busy (
-                  id serial PRIMARY KEY,
-                  order_id INTEGER UNIQUE NOT NULL,
-                  start_timestamp TIMESTAMP NOT NULL,
-                  end_timestamp TIMESTAMP NOT NULL
-              )`,
-      (error, results) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(true);
-      }
-    );
-  });
-
-  await courierBusyTable;
-
   const menuTable = new Promise(function (resolve, reject) {
     pool.query(
       `CREATE TABLE IF NOT EXISTS menu (
                   id serial PRIMARY KEY,
                   name TEXT,
-                  requirement_id INTEGER NOT NULL REFERENCES warehouse(id),
+                  requirement_id INTEGER NOT NULL REFERENCES warehouse(id) ON DELETE CASCADE,
                   amount DECIMAL(10,2) DEFAULT 0 NOT NULL
               )`,
       (error, results) => {
@@ -206,10 +187,9 @@ const createTables = async () => {
   const couriers = new Promise(function (resolve, reject) {
     pool.query(
       `CREATE TABLE IF NOT EXISTS couriers (
-                  id INTEGER NOT NULL REFERENCES users(id),
-                  name TEXT,
-                  works_start BIGINT NOT NULL DEFAULT 0,
-                  works_end BIGINT NOT NULL DEFAULT 0
+                  login TEXT UNIQUE,
+                  work_start BIGINT NOT NULL DEFAULT 0,
+                  work_end BIGINT NOT NULL DEFAULT 0
               )`,
       (error, results) => {
         if (error) {
@@ -222,33 +202,13 @@ const createTables = async () => {
 
   await couriers;
 
-  const orders = new Promise(function (resolve, reject) {
-    pool.query(
-      `CREATE TABLE IF NOT EXISTS orders (
-                  order_id serial PRIMARY KEY,
-                  user_id INTEGER NOT NULL REFERENCES users(id),
-                  courier_id INTEGER,
-                  date BIGINT,
-                  name TEXT NOT NULL,
-                  price DECIMAL(10,2)
-              )`,
-      (error, results) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(true);
-      }
-    );
-  });
-
-  await orders;
-
   const initializeUsers = new Promise(function (resolve, reject) {
     pool.query(
       `INSERT INTO users (login, password_hash, position)
           VALUES ('cookie_monster_11', crypt('Ilikecookies', gen_salt('bf')), 'manager'),
           ('customer', crypt('asdfasdf', gen_salt('bf')), 'customer'),
           ('deliverer', crypt('asdfasdf', gen_salt('bf')), 'deliverer'),
+          ('deliverer2', crypt('asdfasdf', gen_salt('bf')), 'deliverer'),
           ('supplier', crypt('asdfasdf', gen_salt('bf')), 'supplier')`,
       (error, results) => {
         if (error) {
@@ -260,6 +220,29 @@ const createTables = async () => {
   });
 
   await initializeUsers;
+
+  const initializeDeliverer = new Promise(function (resolve, reject) {
+    pool.query(
+      `INSERT INTO couriers (login, work_start, work_end)
+      VALUES ($1, $2, $3), ($4, $5, $6)`,
+      [
+        "deliverer",
+        new Date(1970, 0, 1, 14).getTime(),
+        new Date(1970, 0, 1, 22).getTime(),
+        "deliverer2",
+        new Date(1970, 0, 1, 14).getTime(),
+        new Date(1970, 0, 1, 22).getTime(),
+      ],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(true);
+      }
+    );
+  });
+
+  await initializeDeliverer;
 
   const customerUser = new Promise(function (resolve, reject) {
     pool.query(
@@ -275,6 +258,64 @@ const createTables = async () => {
   });
 
   await customerUser;
+
+  const orders = new Promise(function (resolve, reject) {
+    pool.query(
+      `CREATE TABLE IF NOT EXISTS orders (
+                  id serial PRIMARY KEY,
+                  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                  courier_id INTEGER NOT NULL,
+                  date BIGINT,
+                  name TEXT NOT NULL,
+                  price DECIMAL(10,2),
+                  courier_start BIGINT NOT NULL,
+                  courier_end BIGINT NOT NULL,
+                  delivered BOOLEAN NOT NULL DEFAULT FALSE,
+                  distance DECIMAL(10,2)
+              )`,
+      (error, results) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(true);
+      }
+    );
+  });
+
+  await orders;
+
+  const orders_insert = await new Promise(async function (resolve, reject) {
+    const user_id = await new Promise((resolve2, reject2) => {
+      pool.query(
+        `SELECT id FROM users WHERE position='customer'`,
+        (error, results) => {
+          if (error) {
+            reject2(error);
+          }
+          resolve2(results.rows[0].id);
+        }
+      );
+    });
+
+    pool.query(
+      `INSERT INTO orders (user_id, courier_id, date, name, price, courier_start, courier_end, distance)
+          VALUES ($1, 1, $2, 'pizza #2', 60, $3, $4, 10)`,
+      [
+        user_id,
+        Date.now(),
+        Date.now() + 1800000,
+        Date.now() + 3600000 + 1800000,
+      ],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(true);
+      }
+    );
+  });
+
+  await orders_insert;
 };
 
 module.exports = {
