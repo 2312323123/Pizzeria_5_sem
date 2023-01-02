@@ -100,7 +100,7 @@ function Menu() {
       }),
     });
 
-    // const response = await request;
+    const response = await request;
     // const text = await response.json();
 
     dispatch(end_making_order());
