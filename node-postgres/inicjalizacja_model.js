@@ -264,7 +264,7 @@ const createTables = async () => {
       `CREATE TABLE IF NOT EXISTS orders (
                   id serial PRIMARY KEY,
                   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                  courier_id INTEGER NOT NULL,
+                  courier_login TEXT NOT NULL,
                   date BIGINT,
                   name TEXT NOT NULL,
                   price DECIMAL(10,2),
@@ -298,8 +298,8 @@ const createTables = async () => {
     });
 
     pool.query(
-      `INSERT INTO orders (user_id, courier_id, date, name, price, courier_start, courier_end, distance)
-          VALUES ($1, 1, $2, 'pizza #2', 60, $3, $4, 10)`,
+      `INSERT INTO orders (user_id, courier_login, date, name, price, courier_start, courier_end, distance)
+          VALUES ($1, 'deliverer', $2, 'pizza #2', 60, $3, $4, 10)`,
       [
         user_id,
         Date.now(),

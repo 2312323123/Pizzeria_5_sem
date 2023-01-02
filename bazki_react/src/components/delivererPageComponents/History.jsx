@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { set_history } from "../../features/customer";
+import { set_history } from "../../features/deliverer";
 
 function History() {
-  const { history } = useSelector((state) => state.customer.value);
+  const { history } = useSelector((state) => state.deliverer.value);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
 
@@ -12,7 +12,7 @@ function History() {
   }, []);
 
   async function getHistory() {
-    const request = fetch("http://localhost:3001/history", {
+    const request = fetch("http://localhost:3001/courier_history", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -28,7 +28,7 @@ function History() {
 
   return (
     <>
-      <h3>data | nazwa | dostarczono | odległość</h3>
+      <h3>data | nazwa | dostarczono | cena | odległość</h3>
       <ul style={{ maxHeight: "70vh", overflowY: "auto" }}>
         {history.map((element, index) => (
           <li key={index}>
@@ -39,7 +39,7 @@ function History() {
             <span style={{ marginInline: "0.5rem" }}>
               {element.delivered ? "tak" : "nie"}
             </span>{" "}
-            |
+            |<span style={{ marginInline: "0.5rem" }}>{element.price} zł</span>|
             <span style={{ marginInline: "0.5rem" }}>
               {element.distance} km
             </span>

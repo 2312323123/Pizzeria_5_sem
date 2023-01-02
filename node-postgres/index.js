@@ -6,6 +6,7 @@ const bazki_model = require("./bazki_model");
 const inicjalizacja = require("./inicjalizacja_model");
 const manager_menu_model = require("./manager_menu_model");
 const customer_model = require("./customer_model");
+const courier_model = require("./courier_model");
 
 inicjalizacja.initialize();
 
@@ -18,24 +19,6 @@ app.use(function (req, res, next) {
     "Content-Type, Access-Control-Allow-Headers"
   );
   next();
-});
-
-app.get("/", async (req, res) => {
-  // try {
-  //   const merchants = await bazki_model.checkIfTableExists();
-  //   res.status(200).send(merchants);
-  // } catch (e) {
-  //   console.error(e);
-  //   res.status(500).send(e);
-  // }
-
-  try {
-    const merchants = await bazki_model.getMerchants();
-    res.status(200).send(merchants);
-  } catch (e) {
-    console.error(e);
-    res.status(500).send(e);
-  }
 });
 
 app.post("/login", async (req, res) => {
@@ -138,25 +121,6 @@ app.post("/delete_user", async (req, res) => {
   }
 });
 
-// app.get("/", async (req, res) => {
-//   try {
-//     const merchants = await bazki_model.getMerchants();
-//     res.status(200).send(merchants);
-//   } catch (e) {
-//     console.error(e);
-//     res.status(500).send(e);
-//   }
-
-//   // bazki_model
-//   //   .getMerchants()
-//   //   .then((response) => {
-//   //     res.status(200).send(response);
-//   //   })
-//   //   .catch((error) => {
-//   //     res.status(500).send(error);
-//   //   });
-// });
-
 /* manager_menu_model */
 
 app.post("/get_products", async (req, res) => {
@@ -254,6 +218,56 @@ app.post("/customer_menu", async (req, res) => {
 app.post("/evaluate_delivery_time", async (req, res) => {
   try {
     const result = await customer_model.evaluate_delivery_time(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/order", async (req, res) => {
+  try {
+    const result = await customer_model.order(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/history", async (req, res) => {
+  try {
+    const result = await customer_model.history(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/courier_history", async (req, res) => {
+  try {
+    const result = await courier_model.courier_history(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/courier_deliveries", async (req, res) => {
+  try {
+    const result = await courier_model.courier_deliveries(req.body);
+    res.status(200).send(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+app.post("/delivered", async (req, res) => {
+  try {
+    const result = await courier_model.delivered(req.body);
     res.status(200).send(result);
   } catch (e) {
     console.error(e);

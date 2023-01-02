@@ -89,19 +89,6 @@ function Products() {
     }
   }
 
-  async function updateProducts() {
-    // const request = fetch("http://localhost:3001/get_products", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ login: user.login, password: user.password }),
-    // });
-    // const response = await request;
-    // const text = await response.json();
-    // dispatch(update_products(text));
-  }
-
   return (
     <>
       <h3>

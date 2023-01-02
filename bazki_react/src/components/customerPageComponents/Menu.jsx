@@ -4,14 +4,15 @@ import {
   update_products,
   start_making_order,
   end_making_order,
+  set_predicted_time,
+  set_distance,
 } from "../../features/customer";
 import SingleMenuProduct from "./SingleMenuProduct";
 
 function Menu() {
   const user = useSelector((state) => state.user.value);
-  const { products, making_order, current_order, predicted_time } = useSelector(
-    (state) => state.customer.value
-  );
+  const { products, making_order, current_order, predicted_time, distance } =
+    useSelector((state) => state.customer.value);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -44,7 +45,7 @@ function Menu() {
       });
     }
 
-    console.log(processed);
+    // console.log(processed);
     dispatch(update_products(processed));
   }
 
@@ -56,6 +57,8 @@ function Menu() {
     if (distance < 0) {
       return;
     }
+
+    dispatch(set_distance(distance));
 
     const request = fetch("http://localhost:3001/evaluate_delivery_time", {
       method: "POST",
@@ -72,28 +75,36 @@ function Menu() {
     const response = await request;
     const text = await response.json();
 
-    console.log(text);
-    // const processed = [];
-
-    // for (const x of text.prices) {
-    //   const name = x.name;
-    //   const ingredients = text.ingredients.filter(
-    //     (ingredient) => ingredient.menu_name === name
-    //   );
-    //   processed.push({
-    //     name: x.name,
-    //     ingredients: ingredients.map((obj) => ({
-    //       id: obj.id,
-    //       name: obj.name,
-    //       amount: obj.amount,
-    //     })),
-    //     product_price: Number(x.product_price),
-    //     price: Number(x.price),
-    //   });
-    // }
-
-    // dispatch(update_products(processed));
+    dispatch(
+      set_predicted_time(
+        isNaN(Math.round((new Date(text.time).getTime() - Date.now()) / 60000))
+          ? "dostawa niemożliwa"
+          : Math.round((new Date(text.time).getTime() - Date.now()) / 60000)
+      )
+    );
   }
+
+  const order = async () => {
+    console.log(distance);
+
+    const request = fetch("http://localhost:3001/order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        login: user.login,
+        password: user.password,
+        name: current_order.value.name,
+        distance: distance,
+      }),
+    });
+
+    // const response = await request;
+    // const text = await response.json();
+
+    dispatch(end_making_order());
+  };
 
   return (
     <>
@@ -127,9 +138,9 @@ function Menu() {
             przewidywana dostawa za:{" "}
             {typeof predicted_time === "string"
               ? predicted_time
-              : predicted_time + " minut"}
+              : predicted_time + " minut(y)"}
           </h3>
-          <button>zamów</button>
+          <button onClick={order}>zamów</button>
           <button
             style={{ float: "right" }}
             onClick={() => dispatch(end_making_order())}

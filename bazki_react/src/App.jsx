@@ -7,6 +7,11 @@ import ManagerPanel from "./pages/ManagerPanel";
 import SupplierPanel from "./pages/SupplierPanel";
 
 import { logout } from "./features/user";
+import { reset_history } from "./features/customer";
+import {
+  reset_history as reset_history_deliverer,
+  reset_deliveries,
+} from "./features/deliverer";
 
 function ActualApp() {
   const user = useSelector((state) => state.user.value);
@@ -16,7 +21,15 @@ function ActualApp() {
   return (
     <>
       {user.position !== "unauthenticated" && (
-        <button style={{ float: "right" }} onClick={() => dispatch(logout())}>
+        <button
+          style={{ float: "right" }}
+          onClick={() => {
+            dispatch(logout());
+            dispatch(reset_history());
+            dispatch(reset_history_deliverer());
+            dispatch(reset_deliveries());
+          }}
+        >
           wyloguj
         </button>
       )}

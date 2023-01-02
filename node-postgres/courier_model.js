@@ -9,15 +9,83 @@ const pool = new Pool({
 
 const { authenticate } = require("./bazki_model");
 
+const courier_history = async (body) => {
+  const position = await authenticate(body);
+  const { login } = body;
+
+  if (position === "deliverer") {
+    return new Promise(function (resolve, reject) {
+      pool.query(
+        `SELECT date, name, delivered, distance, price
+          FROM orders
+          WHERE courier_login = $1
+          ORDER BY date DESC`,
+        [login],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows);
+        }
+      );
+    });
+  } else {
+    throw new Error("someone not authorized tried to get customer history");
+  }
+};
+
+const courier_deliveries = async (body) => {
+  const position = await authenticate(body);
+  const { login } = body;
+
+  if (position === "deliverer") {
+    return new Promise(function (resolve, reject) {
+      pool.query(
+        `SELECT id, date, name, delivered, courier_start, courier_end, distance, price
+          FROM orders
+          WHERE courier_login = $1 AND delivered = false
+          ORDER BY courier_start ASC`,
+        [login],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows);
+        }
+      );
+    });
+  } else {
+    throw new Error("someone not authorized tried to get customer history");
+  }
+};
+
+const delivered = async (body) => {
+  const position = await authenticate(body);
+  const { login, id } = body;
+
+  if (position === "deliverer") {
+    return new Promise(function (resolve, reject) {
+      pool.query(
+        `UPDATE orders
+        SET delivered = true
+        WHERE id = $1 AND courier_login = $2
+        ORDER BY date DESC`,
+        [id, login],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows);
+        }
+      );
+    });
+  } else {
+    throw new Error("someone not authorized tried to deliver");
+  }
+};
+
 module.exports = {
-  get_products,
-  add_product,
-  delete_product,
-  change_product_name,
-  change_product_price,
-  add_product_ingredient,
-  change_product_ingredient_amount,
-  delete_product_ingredient,
-  update_prices_new_menu_entry,
-  update_prices,
+  courier_history,
+  courier_deliveries,
+  delivered,
 };

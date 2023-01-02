@@ -1,21 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// const initialStateValue = {
-//   login: "",
-//   password: "",
-//   position: "unauthenticated",
-// };
-
-// const initialStateValue = {
-//   login: "cookie_monster_11",
-//   password: "Ilikecookies",
-//   position: "manager",
-// };
-
 const initialStateValue = {
-  login: "customer",
-  password: "asdfasdf",
-  position: "customer",
+  login: "",
+  password: "",
+  position: "unauthenticated",
 };
 
 export const userSlice = createSlice({
