@@ -68,8 +68,7 @@ const delivered = async (body) => {
       pool.query(
         `UPDATE orders
         SET delivered = true
-        WHERE id = $1 AND courier_login = $2
-        ORDER BY date DESC`,
+        WHERE id = $1 AND courier_login = $2`,
         [id, login],
         (error, results) => {
           if (error) {

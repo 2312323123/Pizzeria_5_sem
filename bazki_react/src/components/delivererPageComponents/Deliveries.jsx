@@ -23,8 +23,6 @@ function Deliveries() {
     const response = await request;
     const text = await response.json();
 
-    console.log(text);
-
     dispatch(set_history(text));
   }
 

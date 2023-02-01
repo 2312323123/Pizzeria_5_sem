@@ -1,0 +1,72 @@
+/* some nice CSS for login page */
+input[type="text"],
+input[type="password"] {
+  background: #fff;
+  border-radius: 3px;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  width: 100%;
+  padding: 10px 0;
+  position: relative;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 1.25rem;
+}
+
+/* ome nice style for submit button */
+input[type="submit"] {
+  background: #4d90fe;
+  border: 1px solid #3079ed;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 10px auto;
+  padding: 10px 0;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+
+/* some nice style for label */
+label {
+  background: rgba(0, 0, 0, 0.9);
+  color: #999;
+  font-size: 20px;
+  font-weight: normal;
+  padding: 0 20px;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+
+/* some nice style for h2 */
+h2 {
+  background: rgba(0, 0, 0, 0.9);
+  color: #999;
+  font-size: 30px;
+  font-weight: normal;
+  padding: 20px 0;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+
+/* body with background of 'indeks.png' from ./images */
+body {
+  margin: 0;
+  background: url(../images/indeks.png) center center fixed;
+  width: 100%;
+  min-height: 100vh;
+}
+
+div {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+h3 {
+  text-align: center;
+}

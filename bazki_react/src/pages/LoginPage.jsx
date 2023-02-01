@@ -105,29 +105,28 @@ function LoginPage() {
   }
 
   return (
-    <>
+    <div style={{ maxWidth: "50%", marginInline: "auto" }}>
       <h2>Sign in</h2>
       <form>
-        <label>
-          login: {login1}
-          <br />
-          <input
-            type="text"
-            value={login1}
-            onInput={(e) => setLogin1(e.target.value)}
-            ref={loginRef1}
-          />
-        </label>
+        <label htmlFor="login1Input">login: {login1}</label>
         <br />
-        <label>
-          password: <br />
-          <input
-            type="password"
-            value={password1}
-            onInput={(e) => setPassword1(e.target.value)}
-            ref={passwordRef1}
-          />{" "}
-        </label>
+        <input
+          id="login1Input"
+          type="text"
+          value={login1}
+          onInput={(e) => setLogin1(e.target.value)}
+          ref={loginRef1}
+        />
+        <br />
+        <label htmlFor="password1Input">password:</label>
+        <br />
+        <input
+          id="password1Input"
+          type="password"
+          value={password1}
+          onInput={(e) => setPassword1(e.target.value)}
+          ref={passwordRef1}
+        />{" "}
         <br />
         <input
           type="submit"
@@ -138,25 +137,25 @@ function LoginPage() {
       <h2>or</h2>
       <h2>Register</h2>
       <form>
-        <label>
-          login: <br />
-          <input
-            type="text"
-            value={login2}
-            onInput={(e) => setLogin2(e.target.value)}
-            ref={loginRef2}
-          />
-        </label>
+        <label htmlFor="login2Input">login:</label>
         <br />
-        <label>
-          password: <br />
-          <input
-            type="password"
-            value={password2}
-            onInput={(e) => setPassword2(e.target.value)}
-            ref={passwordRef2}
-          />{" "}
-        </label>
+        <input
+          id="login2Input"
+          type="text"
+          value={login2}
+          onInput={(e) => setLogin2(e.target.value)}
+          ref={loginRef2}
+        />
+        <br />
+        <label htmlFor="password2Input">password:</label>
+        <br />
+        <input
+          id="password2Input"
+          type="password"
+          value={password2}
+          onInput={(e) => setPassword2(e.target.value)}
+          ref={passwordRef2}
+        />{" "}
         <br />
         <input
           type="submit"
@@ -164,20 +163,7 @@ function LoginPage() {
           disabled={processingRequest}
         />
       </form>
-      <button
-        onClick={() =>
-          dispatch(
-            login({
-              login: "jan",
-              password: "kowalski",
-              position: "manager",
-            })
-          )
-        }
-      >
-        hehe
-      </button>
-    </>
+    </div>
   );
 }
 

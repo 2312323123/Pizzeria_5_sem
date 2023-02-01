@@ -5,6 +5,7 @@ import DelivererPanel from "./pages/DelivererPanel";
 import LoginPage from "./pages/LoginPage";
 import ManagerPanel from "./pages/ManagerPanel";
 import SupplierPanel from "./pages/SupplierPanel";
+import "./styles/index.css";
 
 import { logout } from "./features/user";
 import { reset_history } from "./features/customer";
