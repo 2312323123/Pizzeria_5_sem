@@ -329,6 +329,71 @@ const order = async (body) => {
       throw new Error("no such product");
     }
 
+    const client = await pool.connect()
+
+
+    await client.query('BEGIN')
+
+    await client.query(
+      `SELECT amount
+      FROM warehouse
+      FOR UPDATE`)
+
+    const products_id = await new Promise(function (resolve, reject) {
+      client.query(
+        `SELECT requirement_id, amount
+        FROM menu
+        WHERE name = $1`,
+        [name],
+        async (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows);
+        }
+      );
+    });
+
+    let i = 0
+    let are_products_available = true
+
+    while (i < products_id.length) {
+      let warehouse_amount = await new Promise(function (resolve, reject) {
+        client.query(
+          `SELECT amount
+          FROM warehouse
+          WHERE id = $1`,
+          [products_id[i].requirement_id],
+          async (error, results) => {
+            if (error) {
+              reject(error);
+            }
+            resolve(results.rows[0].amount);
+          }
+        );
+      });
+
+      if(warehouse_amount-products_id[i].amount>=0){
+        await client.query(
+          `UPDATE warehouse
+          SET amount = amount-$1
+          WHERE id = $2`,
+          [products_id[i].amount, products_id[i].requirement_id])
+      }else{
+        await client.query('ROLLBACK')
+        are_products_available = false
+        break
+      }
+      i++;
+    }
+
+    await client.query('COMMIT')
+    client.release()
+
+    if (!are_products_available) {
+      throw new Error("no products in the warehouse");
+    }
+
     const price = await new Promise(function (resolve, reject) {
       pool.query(
         `SELECT price
