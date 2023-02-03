@@ -270,8 +270,15 @@ const editUser = async (body) => {
   ) {
     if (position === "manager") {
       if (edit_position === "deliverer") {
+        const client = await pool.connect()
+        await client.query('BEGIN')
+        await client.query(
+          `SELECT login
+          FROM users
+          WHERE position = 'deliverer'
+          FOR UPDATE`)
         const deliverersAmountPromise = new Promise(function (resolve, reject) {
-          pool.query(
+          client.query(
             `SELECT COUNT(login)
               FROM users
               WHERE position = 'deliverer'`,
@@ -291,7 +298,7 @@ const editUser = async (body) => {
           return Promise.reject({ message: "max deliverers amount reached" });
         } else {
           await new Promise(function (resolve, reject) {
-            pool.query(
+            client.query(
               `INSERT INTO couriers (login, work_start, work_end)
               VALUES ($1, $2, $3)`,
               [
@@ -308,6 +315,8 @@ const editUser = async (body) => {
             );
           });
         }
+        await client.query('COMMIT')
+        client.release()
       }
 
       return new Promise(function (resolve, reject) {
@@ -336,11 +345,15 @@ const delete_user = async (body) => {
   const position = await authenticate(body);
   const { user_login } = body;
 
+  const client = await pool.connect()
+  await client.query('BEGIN')
+
   if (position === "manager") {
     const exists = await new Promise(function (resolve, reject) {
-      pool.query(
+      client.query(
         `SELECT EXISTS (
-          SELECT 1 FROM users WHERE login=$1
+          SELECT id FROM users WHERE login=$1
+          FOR UPDATE
         )`,
         [user_login],
         async (error, results) => {
@@ -357,7 +370,7 @@ const delete_user = async (body) => {
     }
 
     const user_position_query = await new Promise(function (resolve, reject) {
-      pool.query(
+      client.query(
         `SELECT position FROM users WHERE login=$1`,
         [user_login],
         async (error, results) => {
@@ -373,7 +386,7 @@ const delete_user = async (body) => {
 
     if (user_position === "deliverer") {
       await new Promise((resolve, reject) => {
-        pool.query(
+        client.query(
           `DELETE FROM couriers
           WHERE login = $1`,
           [user_login],
@@ -387,8 +400,8 @@ const delete_user = async (body) => {
       });
     }
 
-    return new Promise(function (resolve, reject) {
-      pool.query(
+    await new Promise(function (resolve, reject) {
+      client.query(
         `DELETE FROM users
         WHERE login = $1`,
         [user_login],
@@ -400,6 +413,11 @@ const delete_user = async (body) => {
         }
       );
     });
+
+    await client.query('COMMIT')
+    client.release()
+
+    return true
   } else {
     throw new Error("someone not authorized tried to delete user");
   }

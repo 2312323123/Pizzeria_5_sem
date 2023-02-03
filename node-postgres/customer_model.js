@@ -331,13 +331,14 @@ const order = async (body) => {
 
     const client = await pool.connect()
 
-
     await client.query('BEGIN')
 
     await client.query(
-      `SELECT amount
-      FROM warehouse
-      FOR UPDATE`)
+      `SELECT *
+      FROM menu m, warehouse w
+      WHERE w.id=m.requirement_id and m.name=$1
+      FOR UPDATE`,
+      [name])
 
     const products_id = await new Promise(function (resolve, reject) {
       client.query(
