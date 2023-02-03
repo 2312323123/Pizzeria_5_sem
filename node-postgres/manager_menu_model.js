@@ -25,11 +25,15 @@ const add_product = async (body) => {
   const position = await authenticate(body);
   const { name, id, amount } = body;
 
+  const client = await pool.connect()
+  await client.query('BEGIN')
+
   if (position === "manager") {
     const taken = await new Promise(function (resolve, reject) {
-      pool.query(
+      client.query(
         `SELECT EXISTS (
-          SELECT 1 FROM menu WHERE name=$1
+          SELECT id FROM menu WHERE name=$1
+          FOR UPDATE
         )`,
         [name],
         async (error, results) => {
@@ -45,8 +49,8 @@ const add_product = async (body) => {
       throw new Error("product name taken");
     }
 
-    return new Promise(function (resolve, reject) {
-      pool.query(
+    await new Promise(function (resolve, reject) {
+      client.query(
         `INSERT INTO menu (name, requirement_id, amount)
         VALUES ($1, $2, $3)`,
         [name, id, amount],
@@ -59,6 +63,11 @@ const add_product = async (body) => {
         }
       );
     });
+
+    await client.query('COMMIT')
+    client.release()
+
+    return update_prices_new_menu_entry(body);
   } else {
     throw new Error("someone not authorized tried to edit ingredients");
   }
@@ -126,10 +135,14 @@ const change_product_name = async (body) => {
   const position = await authenticate(body);
   const { name, new_name } = body;
 
+  const client = await pool.connect()
+
+  await client.query('BEGIN')
+
   if (position === "manager") {
     const result = await new Promise(function (resolve, reject) {
-      pool.query(
-        `SELECT EXISTS (SELECT 1 FROM menu WHERE name=$1);`,
+      client.query(
+        `SELECT EXISTS (SELECT id FROM menu WHERE name=$1 FOR UPDATE);`,
         [name],
         async (error, results) => {
           if (error) {
@@ -142,7 +155,7 @@ const change_product_name = async (body) => {
 
     if (result === true) {
       await new Promise(function (resolve, reject) {
-        pool.query(
+        client.query(
           `UPDATE menu
           SET name=$1
           WHERE name=$2`,
@@ -155,9 +168,10 @@ const change_product_name = async (body) => {
           }
         );
       });
-
-      return new Promise(function (resolve, reject) {
-        pool.query(
+      
+      
+      await new Promise(function (resolve, reject) {
+        client.query(
           `UPDATE prices
           SET name=$1
           WHERE name=$2`,
@@ -170,6 +184,11 @@ const change_product_name = async (body) => {
           }
         );
       });
+
+      await client.query('COMMIT')
+      client.release()
+
+      return true
     } else {
       throw new Error("name already taken");
     }
